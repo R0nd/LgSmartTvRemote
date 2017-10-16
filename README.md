@@ -3,6 +3,10 @@
 
 Remote control for 1st-gen LG Smart TV (2013-2014 models). Based on https://github.com/migueljteixeira/nodejs-lgtvRemoteControl
 
+## Installation
+
+    npm i lgsmarttvremote
+
 ## Usage
 
 Require the module
