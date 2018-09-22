@@ -82,7 +82,7 @@ class LgRemote {
 
   // Scan for devices on localhost
   discover() {
-    var ssdpClient = new Client();
+    var ssdpClient = new Client({ explicitSocketBind: true });
     var promise = new Promise((resolve, reject) =>
       ssdpClient.on("response", (headers, statusCode, rinfo) => {
         console.log({ headers: headers, statusCode: statusCode, rinfo: rinfo });
