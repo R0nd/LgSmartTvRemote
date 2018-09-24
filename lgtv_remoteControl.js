@@ -80,17 +80,42 @@ class LgRemote {
       });
   }
 
+  async getDescription(url) {
+    const response = await fetch(url, {
+      headers: { "User-Agent": "UDAP/2.0" }
+    });
+    if (response.status !== 200) {
+      return undefined;
+    }
+    let content;
+    xml2js.parseString(await response.text(), (err, text) => {
+      content = text;
+    });
+    return content.envelope.device;
+  }
+
   // Scan for devices on localhost
-  discover() {
+  discover(deviceName) {
     var ssdpClient = new Client({ explicitSocketBind: true });
     var promise = new Promise((resolve, reject) =>
       ssdpClient.on("response", (headers, statusCode, rinfo) => {
         console.log({ headers: headers, statusCode: statusCode, rinfo: rinfo });
-        this.address = rinfo.address;
-        resolve();
+
+        const deviceDescription = this.getDescription(headers.LOCATION);
+        if (
+          deviceDescription &&
+          deviceDescription.deviceType === "TV" &&
+          deviceDescription.manufacturer === "LG Electronics"
+        ) {
+          if (deviceName && deviceDescription.friendlyName !== deviceName) {
+            return;
+          }
+          this.address = rinfo.address;
+          resolve();
+        }
       })
     );
-    ssdpClient.search("udap:rootservice");
+    ssdpClient.search("urn:schemas-udap:service:netrcu:1");
     return promise;
   }
 
