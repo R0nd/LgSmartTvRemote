@@ -80,6 +80,10 @@ class LgRemote {
       });
   }
 
+  escapeRegExp(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); // $& means the whole matched string
+  }
+
   async getDescription(url) {
     const response = await fetch(url, {
       headers: { "User-Agent": "UDAP/2.0" }
@@ -91,7 +95,7 @@ class LgRemote {
     xml2js.parseString(await response.text(), (err, text) => {
       content = text;
     });
-    return content.envelope.device;
+    return content.envelope.device[0];
   }
 
   // Scan for devices on localhost
@@ -101,18 +105,24 @@ class LgRemote {
       ssdpClient.on("response", (headers, statusCode, rinfo) => {
         console.log({ headers: headers, statusCode: statusCode, rinfo: rinfo });
 
-        const deviceDescription = this.getDescription(headers.LOCATION);
-        if (
-          deviceDescription &&
-          deviceDescription.deviceType === "TV" &&
-          deviceDescription.manufacturer === "LG Electronics"
-        ) {
-          if (deviceName && deviceDescription.friendlyName !== deviceName) {
-            return;
+        this.getDescription(headers.LOCATION).then(deviceDescription => {
+          if (
+            deviceDescription &&
+            deviceDescription.deviceType[0] === "TV" &&
+            deviceDescription.manufacturer[0] === "LG Electronics"
+          ) {
+            if (
+              deviceName &&
+              new RegExp(
+                `^(\[.*\]){0,2}${this.escapeRegExp(deviceName)}$`
+              ).test(deviceDescription.friendlyName[0])
+            ) {
+              return;
+            }
+            this.address = rinfo.address;
+            resolve();
           }
-          this.address = rinfo.address;
-          resolve();
-        }
+        });
       })
     );
     ssdpClient.search("urn:schemas-udap:service:netrcu:1");
