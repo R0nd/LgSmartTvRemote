@@ -1,6 +1,6 @@
 {
   "name": "lgsmarttvremote",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Remote control for 1st-gen LG Smart TV",
   "main": "lgtv_remoteControl.js",
   "dependencies": {
