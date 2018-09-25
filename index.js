@@ -95,7 +95,10 @@ class LgRemote {
     xml2js.parseString(await response.text(), (err, text) => {
       content = text;
     });
-    return content.envelope.device[0];
+    
+    // Safely return a deeply-nested value because the || operator
+    // return the second parameter if the first parameter is falsy.
+    return (((content || {}).envelope || {}).device || {})[0];
   }
 
   // Scan for devices on localhost
